@@ -1,6 +1,6 @@
 ## Rust Axum for Production.
 
-### Dev (REPL)
+### Dev (watch)
 
 > NOTE: Install cargo watch with `cargo install cargo-watch`.
 ```sh
@@ -17,7 +17,7 @@ $ cargo watch -q -c -w tests/ -x "test -q quick_dev -- --nocapture"
 $ cargo watch -q -c -w src/ -w .cargo/ -x "run"
 ```
 
-### Unit Test (REPL)
+### Unit Test (watch)
 
 ```sh
 $ cargo watch -q -c -x "test -- --nocapture"
