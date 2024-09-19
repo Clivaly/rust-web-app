@@ -1,6 +1,6 @@
 use crate::ctx::Ctx;
 use crate::model::ModelManager;
-use crate::model::Result;
+use crate::model::{Error, Result};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -45,6 +45,46 @@ impl TaskBmc {
 
 		Ok(id)
 	}
+
+	pub async fn get(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<Task> {
+		let db = mm.db();
+
+		let task = sqlx::query_as("SELECT * FROM task WHERE id = $1")
+			.bind(id)
+			.fetch_optional(db)
+			.await?
+			.ok_or(Error::EntityNotFound { entity: "task", id })?;
+
+		Ok(task)
+	}
+
+	pub async fn list(_ctx: &Ctx, mm: &ModelManager) -> Result<Vec<Task>> {
+		let db = mm.db();
+
+		let tasks: Vec<Task> = sqlx::query_as("SELECT * FROM task ORDER by id")
+			.fetch_all(db)
+			.await?;
+
+		Ok(tasks)
+	}
+
+	// TODO: update
+
+	pub async fn delete(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
+		let db = mm.db();
+
+		let count = sqlx::query("DELETE FROM task where id = $1")
+			.bind(id)
+			.execute(db)
+			.await?
+			.rows_affected();
+
+		if count == 0 {
+			return Err(Error::EntityNotFound { entity: "task", id });
+		}
+
+		Ok(())
+	}
 }
 
 // endregion: --- TaskBack Model Controller (TaskBmc)
@@ -74,21 +114,91 @@ mod tests {
 		let id = TaskBmc::create(&ctx, &mm, task_c).await?;
 
 		// -- Check
-		let (title,): (String,) =
-			sqlx::query_as("SELECT title from task where id = $1")
-				.bind(id)
-				.fetch_one(mm.db())
-				.await?;
+		let task = TaskBmc::get(&ctx, &mm, id).await?;
 		// println!("->> {title}");
-		assert_eq!(title, fx_title);
+		assert_eq!(task.title, fx_title);
 
 		// -- Clean
-		let count = sqlx::query("DELETE FROM task Where id = $1")
-			.bind(id)
-			.execute(mm.db())
-			.await?
-			.rows_affected();
-		assert_eq!(count, 1, "Did not delete 1 row?");
+		TaskBmc::delete(&ctx, &mm, id).await?;
+
+		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn tests_get_err_not_found() -> Result<()> {
+		// -- Setup & Fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_id = 100;
+
+		// -- Exec
+		let res = TaskBmc::get(&ctx, &mm, fx_id).await;
+
+		// -- Check
+		assert!(
+			matches!(
+				res,
+				Err(Error::EntityNotFound {
+					entity: "task",
+					id: 100
+				})
+			),
+			"EntityNotFound not matching"
+		);
+
+		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_list_ok() -> Result<()> {
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_titles = &["test_list_ok-task 01", "test_list_ok-task 02"];
+		_dev_utils::seed_tasks(&ctx, &mm, fx_titles).await?;
+
+		// -- Exec
+		let tasks = TaskBmc::list(&ctx, &mm).await?;
+		// println!("->> {tasks:?}");
+
+		// -- Check
+		let tasks: Vec<Task> = tasks
+			.into_iter()
+			.filter(|t| t.title.starts_with("test_list_ok"))
+			.collect();
+		assert_eq!(tasks.len(), 2, "number of seeded tasks.");
+
+		// -- Clean
+		for task in tasks {
+			TaskBmc::delete(&ctx, &mm, task.id).await?;
+		}
+
+		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_delete_err_not_found() -> Result<()> {
+		// -- Setup & Fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_id = 100;
+
+		// -- Exec
+		let res = TaskBmc::delete(&ctx, &mm, fx_id).await;
+
+		// -- Check
+		assert!(
+			matches!(
+				res,
+				Err(Error::EntityNotFound {
+					entity: "task",
+					id: 100
+				})
+			),
+			"EntityNotFound not matching"
+		);
 
 		Ok(())
 	}
