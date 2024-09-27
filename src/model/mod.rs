@@ -15,10 +15,9 @@
 //! - In frameworks like Axum, Tauri, `ModelManager` are typically used as App State.
 //! - ModelManager are designed to be passed as an argument
 //!   to all Model Controllers functions.
-//!
 
 // region:    --- Modules
-
+mod base;
 mod error;
 mod store;
 pub mod task;

@@ -23,7 +23,7 @@ $ cargo watch -q -c -w src/ -w .cargo/ -x "run"
 $ cargo watch -q -c -x "test -- --nocapture"
 
 # Specific test with filter.
-$ cargo watch -q -c -x "test model::task::tests::test_create -- --nocapture"
+$ cargo watch -q -c -x "test model::task::tests -- --nocapture"
 ```
 
 ### Dev
