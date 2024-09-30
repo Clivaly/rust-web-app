@@ -20,6 +20,14 @@ RUST_LOG="rust_web_app=debug"
 
 SERVICE_DB_URL="postgres://app_user:dev_only_pwd@localhost/app_db"
 
+SERVICE_PWD_KEY="tDIAzHry_3YH96FUC-42rASk1HsnCd60KkisaWU3RuxKv4G7wmRc3IAjvVmR10QiMBiZ1hQ1cx71stuLL1vLOA"
+
+SERVICE_TOKEN_KEY="BxbzUej4hfLJtdObKzLGGFMfo0Fa8PcGwBTAsBpl2x1W7iY-7iWirUma3WyVOXj4P9JlWrKTl8eXMP8bL_5XeA"
+SERVICE_TOKEN_DURATION_SEC="1800" # 30 minutes
+# ..._KEY = base_64(base_64u(...))
 ## -- ConfigMap
+
+# This will be relative to Cargo.toml.
+# In deployed images, probably use absolute path.
 
 SERVICE_WEB_FOLDER="web-folder/"

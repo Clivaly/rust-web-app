@@ -34,6 +34,8 @@ $ cargo run
 
 # Terminal 2 - To run the tests.
 $ cargo run --example quick_dev
+
+$ cargo run --example gen_key
 ```
 
 ### Unit Test
