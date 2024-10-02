@@ -34,12 +34,13 @@ base64-url = "2"
 
 # -- Others
 uuid = { version = "1", features = ["v4", "fast-rng"] }
+time = "0.3"
 lazy-regex = "3"
 async-trait = "0.1"
 strum_macros = "0.25"
 
 
 [dev-dependencies]
-anyhow = "1"
+anyhow = "1.0.89"
 httpc-test = "0.1.1"
 serial_test = "2"
